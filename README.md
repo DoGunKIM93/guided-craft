@@ -54,3 +54,6 @@ At Guided-Craft folder, type following command:
 ```
 python main.py -it
 ```
+
+## Acknowledgements
+This code is built on [AFA-Net](https://github.com/DoGunKIM93/AFA-Net-And-Joint-IRLPRNet), [CRAFT-SR](https://github.com/AVC2-UESTC/CRAFT-SR/tree/main?tab=readme-ov-file).
