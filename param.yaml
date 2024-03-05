@@ -1,0 +1,211 @@
+#################################################################################
+#                               *** param.yaml ***                              #
+#################################################################################
+
+
+
+
+#################################################################################
+#                                       DATA                                    #
+#################################################################################
+data:
+    path: 
+        datasetPath: path for the dataset (ex. /home/jovyan/dataDrive/dataset/)
+        pretrainedPath: path for the pretrained weight (ex. /home/jovyan/dataDrive/pretrained/)
+    
+
+
+    datasetComponent:
+
+        Thermal_TISR2024_Track2_SR_train:
+            datasetConfig: Thermal_TISR2024_Track2
+            out:
+                LR_X16:
+                    type: Image
+                    classParameter:
+                        mode:
+                            - train
+                        class:
+                            - input_THER_LR_bicubic_x16 # original
+                EO: 
+                    type: Image
+                    classParameter:
+                        mode:
+                            - train
+                        class:
+                            - VIS_HR
+                GT: 
+                    type: Image
+                    classParameter:
+                        mode:
+                            - train
+                        class:
+                            - output_gt_THER_HR
+
+
+        Thermal_TISR2024_Track2_SR_validation:
+            datasetConfig: Thermal_TISR2024_Track2
+            out:
+                LR_X16:
+                    type: Image
+                    classParameter:
+                        mode:
+                            - validation
+                        class:
+                            - input_THER_LR_bicubic_x16 # original
+                EO: 
+                    type: Image
+                    classParameter:
+                        mode:
+                            - validation
+                        class:
+                            - VIS_HR
+                GT: 
+                    type: Image
+                    classParameter:
+                        mode:
+                            - validation
+                        class:
+                            - output_gt_THER_HR
+
+
+        Thermal_TISR2024_Track2_SR_test:
+            datasetConfig: Thermal_TISR2024_Track2
+            out:
+                LR_X16:
+                    type: Image
+                    classParameter:
+                        mode:
+                            - test
+                        class:
+                            - input_THER_LR_bicubic_x16 # original
+                EO_X16: 
+                    type: Image
+                    classParameter:
+                        mode:
+                            - test
+                        class:
+                            - VIS_HR_x16
+
+
+
+    dataLoader:
+
+        train_tisr2024:
+            datasetComponent: # Must be list
+                - Thermal_TISR2024_Track2_SR_train
+            batchSize: 4
+            type: float
+            range: 0~1
+            isEval: False
+            caching: False
+            outOrder: 
+                - LR_X16
+                - EO
+                - GT
+            augmentation:
+                - toGrayscale(applyKeys=[LR_X16, GT])
+                - randomTranslate(labelKey=LR_X16, roll=True):0.7
+                - resize(scaleFactor=0.5, interpolation=lanczos, applyKeys=[EO], labelKey=EO)
+                - random90Rotate(deg=[0, 2])
+                - horizontalFlip()
+                - verticalFlip()
+                - toTensor()
+
+
+        validation_tisr2024:
+            datasetComponent: # Must be list
+                - Thermal_TISR2024_Track2_SR_validation
+            batchSize: 1
+            type: float
+            range: 0~1
+            isEval: True
+            caching: False
+            outOrder: 
+                - LR_X16
+                - EO
+                - GT
+
+            augmentation:
+                - toGrayscale(applyKeys=[LR_X16, GT])
+                - resize(scaleFactor=0.5, interpolation=lanczos, applyKeys=[EO], labelKey=EO)
+                - toTensor()
+
+
+        inference_tisr2024:
+            datasetComponent: # Must be list
+                - Thermal_TISR2024_Track2_SR_test
+            batchSize: 1
+            type: float
+            range: 0~1
+            isEval: True
+            caching: False
+            
+            outOrder: 
+                - LR_X16
+                - EO_X16
+            augmentation:   
+                - toGrayscale(applyKeys=[LR_X16])
+                - resize(scaleFactor=0.5, interpolation=lanczos, applyKeys=[EO_X16], labelKey=EO_X16)
+                - toTensor() 
+
+
+
+            
+#################################################################################
+#                                     TRAIN                                     #
+#################################################################################
+train:
+
+    step:
+        maxEpoch: 180000
+        validationStep: 20
+        archiveStep: 20
+        earlyStopStep: -1
+
+    method:
+        mixedPrecision: False
+
+    dataLoaderNumWorkers: 0
+
+
+
+
+#################################################################################
+#                                   INFERENCE                                   #
+#################################################################################
+inference:
+
+    
+
+#################################################################################
+#                                     SAVE                                      #
+#################################################################################
+save:
+
+    font:
+        path: "/backbone/misc/LatinModernRomanItalic.otf"
+
+    maxSaveImageNumberTrain: 64
+    remainOnlyLastSavedResult: False
+
+
+
+
+
+#################################################################################
+#                                     GENERAL                                   #
+#################################################################################
+general:
+    #maxMemoryCachingSizeGB: 64
+    #maxVRAMCachingSizeGB: 8 # will be devide by # of GPU
+    GPUNum: 1 # comma-separated
+
+
+
+
+
+
+#################################################################################
+#                               *** THANK YOU ***                               #
+#################################################################################
